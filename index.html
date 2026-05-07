@@ -1,0 +1,183 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WheyValue - Protein Cost Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
+    <div class="max-w-md mx-auto p-6">
+        <!-- Header -->
+        <header class="text-center mb-8 pt-4">
+            <div class="inline-block p-3 bg-indigo-600 rounded-2xl shadow-lg mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800 tracking-tight">WheyValue</h1>
+            <p class="text-slate-500 text-sm mt-1 font-medium">Protein Efficiency Calculator (₹)</p>
+        </header>
+
+        <!-- Input Section -->
+        <div class="card rounded-3xl shadow-xl border border-slate-200 p-6 space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Price of Packet (₹)</label>
+                <input type="number" id="price" placeholder="e.g. 4500" step="0.01"
+                    class="w-full bg-slate-100 border-none rounded-xl p-4 text-lg font-semibold focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Total Weight (g)</label>
+                <input type="number" id="totalWeight" placeholder="e.g. 2000"
+                    class="w-full bg-slate-100 border-none rounded-xl p-4 text-lg font-semibold focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Scoop (g)</label>
+                    <input type="number" id="scoopSize" placeholder="33"
+                        class="w-full bg-slate-100 border-none rounded-xl p-4 text-lg font-semibold focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Protein (g)</label>
+                    <input type="number" id="proteinPerScoop" placeholder="24"
+                        class="w-full bg-slate-100 border-none rounded-xl p-4 text-lg font-semibold focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="calculate()" 
+                    class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                    Calculate
+                </button>
+                <button onclick="resetApp()" 
+                    class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 rounded-xl transition-all active:scale-95">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="results" class="hidden mt-8 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-100">
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Protein Purity</p>
+                <div class="flex items-end justify-between">
+                    <h2 id="resPercentage" class="text-4xl font-black text-indigo-600">0%</h2>
+                    <span id="purityLabel" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase">EXCELLENT</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 mt-4 rounded-full overflow-hidden">
+                    <div id="purityBar" class="bg-indigo-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-3xl p-6 shadow-xl text-white">
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Cost Per 100g Protein</p>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-2xl font-bold text-slate-500">₹</span>
+                    <h2 id="resPricePer100" class="text-5xl font-black">0.00</h2>
+                </div>
+                <p class="text-slate-500 text-[10px] mt-4 uppercase font-bold tracking-tight opacity-80">Efficiency metric: The lower, the better.</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                    <p class="text-slate-400 text-[10px] font-black uppercase">Total Scoops</p>
+                    <p id="resTotalScoops" class="text-xl font-bold text-slate-800">0</p>
+                </div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                    <p class="text-slate-400 text-[10px] font-black uppercase">Price / Scoop</p>
+                    <p id="resPricePerScoop" class="text-xl font-bold text-slate-800">₹0.00</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Error Message -->
+        <div id="errorBox" class="hidden mt-4 bg-rose-50 text-rose-600 p-4 rounded-xl text-center text-sm font-medium border border-rose-100">
+            Please fill in all fields correctly.
+        </div>
+    </div>
+
+    <script>
+        const inputs = ['price', 'totalWeight', 'scoopSize', 'proteinPerScoop'];
+
+        function calculate() {
+            const price = parseFloat(document.getElementById('price').value);
+            const totalWeight = parseFloat(document.getElementById('totalWeight').value);
+            const scoopSize = parseFloat(document.getElementById('scoopSize').value);
+            const proteinPerScoop = parseFloat(document.getElementById('proteinPerScoop').value);
+
+            const errorBox = document.getElementById('errorBox');
+            const results = document.getElementById('results');
+
+            if (!price || !totalWeight || !scoopSize || !proteinPerScoop || proteinPerScoop > scoopSize) {
+                errorBox.classList.remove('hidden');
+                results.classList.add('hidden');
+                errorBox.innerText = proteinPerScoop > scoopSize ? 
+                    "Protein cannot be more than the scoop size!" : 
+                    "Please enter valid numbers in all fields.";
+                return;
+            }
+
+            errorBox.classList.add('hidden');
+            
+            const percentage = (proteinPerScoop / scoopSize) * 100;
+            const totalScoops = totalWeight / scoopSize;
+            const totalProteinInPacket = totalScoops * proteinPerScoop;
+            const pricePer100gProtein = (price / totalProteinInPacket) * 100;
+            const pricePerScoop = price / totalScoops;
+
+            // Update UI
+            document.getElementById('resPercentage').innerText = percentage.toFixed(1) + '%';
+            document.getElementById('resPricePer100').innerText = pricePer100gProtein.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('resTotalScoops').innerText = Math.floor(totalScoops);
+            document.getElementById('resPricePerScoop').innerText = '₹' + pricePerScoop.toFixed(1);
+            
+            const bar = document.getElementById('purityBar');
+            bar.style.width = percentage + '%';
+            
+            const label = document.getElementById('purityLabel');
+            if (percentage >= 80) {
+                label.innerText = "HIGH PURITY";
+                label.className = "px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-black uppercase";
+            } else if (percentage >= 65) {
+                label.innerText = "GOOD";
+                label.className = "px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black uppercase";
+            } else {
+                label.innerText = "LOW PROTEIN";
+                label.className = "px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-black uppercase";
+            }
+
+            results.classList.remove('hidden');
+            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetApp() {
+            inputs.forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('errorBox').classList.add('hidden');
+            document.getElementById('purityBar').style.width = '0%';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
+
+```
